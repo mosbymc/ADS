@@ -1,0 +1,16 @@
+ADS/bin
+ADS/obj
+.vs
+build
+_ReSharper.*
+*.csproj.user
+*.resharper.user
+*.ReSharper.user
+*.ReSharper
+*.suo
+*.userprefs
+*.pidb
+artifacts
+src/CommonAssemblyInfo.cs
+*.dotCover
+*mm_cache.bin
