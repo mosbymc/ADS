@@ -1,9 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ADS
 {
+    public static class Constant
+    {
+        public static Constant<T> Of<T>(T value)
+        {
+            return new Constant<T>(value);
+        }
+    }
+
     public class Constant<T>
     {
         private T Value;
@@ -13,9 +19,10 @@ namespace ADS
             Value = value;
         }
 
-        public Constant<T> Map<TResult>(Func<T, TResult> fn)
+        public Constant<TResult> Map<TResult>(Func<T, TResult> fn)
         {
-            return this;
+            new Constant<T>(Value);
+            return new Constant<TResult>(fn(Value));
         }
 
         public Constant<T> Chain<TResult>(Func<T, Constant<TResult>> fn)

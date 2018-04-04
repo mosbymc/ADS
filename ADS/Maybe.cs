@@ -1,26 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ADS
 {
-    public interface Maybe<T> {
+    public interface Maybe<T>:IMonad<T>
+    {
         bool IsJust();
         bool IsNothing();
-        T Extract();
     }
 
-    public static class _Maybe<T>
+    public static class Maybe
     {
-        public static Maybe<T> From(T value)
+        public static Maybe<T> From<T>(T value)
         {
-            //return null == value ? new Nothing<T>() : new Just<T>(value);
-            return null;
+            if (null == value) return new Nothing<T>();
+            return new Just<T>(value);
         }
 
-        public static Maybe<T> Of(T value)
+        public static Maybe<T> Of<T>(T value)
         {
             return new Just<T>(value);
+        }
+
+        public static Just<T> Just<T>(T value)
+        {
+            return new Just<T>(value);
+        }
+
+        public static Nothing<T> Nothing<T>(T value)
+        {
+            return new Nothing<T>();
         }
     }
 }
