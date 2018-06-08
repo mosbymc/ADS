@@ -41,6 +41,8 @@ namespace ADS
 
         public Identity<TResult> Chain<TResult>(Func<T, Identity<TResult>> fn)
         {
+            var i = new Identity<Identity<int>>(new Identity<int>(5));
+            var ii = new Identity<int>(5).Map(x => new Identity<int>(x));
             return fn(Value);
         }
 

@@ -2,75 +2,71 @@
 
 namespace ADS
 {
-    public static class Just
+    public static class Right
     {
-        public static Just<T> Of<T>(T value)
+        public static Right<T> Of<T>(T value)
         {
-            return new Just<T>(value);
+            return new Right<T>(value);
         }
 
-        public static Just<T> Join<T>(this Just<Just<T>> source)
+        public static Right<T> Join<T>(this Right<Right<T>> source)
         {
             return source.Extract();
         }
     }
 
-    public class Just<T> : Maybe<T>
+    public class Right<T> : Either<T>
     {
         private T Value;
 
-        public Just(T value)
+        public Right(T value)
         {
             Value = value;
         }
 
         public IMonad<TResult> Map<TResult>(Func<T, TResult> fn)
         {
-            var res = fn(Value);
-            if (null == res) return new Nothing<TResult>();
-            return new Just<TResult>(res);
+            return new Right<TResult>(fn(Value));
         }
 
-        public Maybe<TResult> Chain<TResult>(Func<T, Maybe<TResult>> fn)
+        public Either<TResult> Chain<TResult>(Func<T, Either<TResult>> fn)
         {
             return fn(Value);
         }
 
         IMonad<TResult> IMonad<T>.Chain<TResult>(Func<T, IMonad<TResult>> fn)
         {
-            return Chain(a => (Maybe<TResult>)fn(a));
+            return Chain(a => (Either<TResult>)fn(a));
         }
 
         public IMonad<Func<A, C>> Contramap<A, B, C>(Func<A, B> fn)
         {
-            return new Just<Func<A, C>>(arg => (Value as Func<B, C>)(fn(arg)));
+            return new Right<Func<A, C>>(arg => (Value as Func<B, C>)(fn(arg)));
         }
 
         public IMonad<Func<A, D>> Dimap<A, B, C, D>(Func<A, B> f, Func<C, D> g)
         {
-            return new Just<Func<A, D>>(arg => g((Value as Func<B, C>)(f(arg))));
+            return new Right<Func<A, D>>(arg => g((Value as Func<B, C>)(f(arg))));
         }
 
-        public IMonad<Just<TResult>> Traverse<TResult>(Func<T, IMonad<TResult>> fn)
+        public IMonad<Right<TResult>> Traverse<TResult>(Func<T, IMonad<TResult>> fn)
         {
-            return fn(Value).Map(x => new Just<TResult>(x));
+            return fn(Value).Map(x => new Right<TResult>(x));
         }
 
         IMonad<IMonad<TResult>> IMonad<T>.Traverse<TResult>(Func<T, IMonad<TResult>> fn)
         {
             return Traverse(fn) as IMonad<IMonad<TResult>>;
-            //var t = fn(Value).Map(x => new Identity<TResult>(x));
-            //return t as IMonad<IMonad<TResult>>;
         }
 
-        public Just<TResult> Apply<TResult>(Just<T> x)
+        public Right<TResult> Apply<TResult>(Right<T> x)
         {
-            return x.Map(Value as Func<T, TResult>) as Just<TResult>;
+            return x.Map(Value as Func<T, TResult>) as Right<TResult>;
         }
 
         IMonad<TResult> IMonad<T>.Apply<TResult>(IMonad<T> ma)
         {
-            return Apply<TResult>(x: (Just<T>)ma);
+            return Apply<TResult>(x: (Right<T>)ma);
         }
 
         public bool Equals(IMonad<T> ma)
@@ -78,12 +74,12 @@ namespace ADS
             return ma.GetType().IsInstanceOfType(this) && ma.Extract().Equals(Value);
         }
 
-        public bool IsJust()
+        public bool IsRight()
         {
             return true;
         }
 
-        public bool IsNothing()
+        public bool IsLeft()
         {
             return false;
         }
