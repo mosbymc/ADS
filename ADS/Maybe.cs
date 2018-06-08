@@ -2,7 +2,7 @@
 
 namespace ADS
 {
-    public interface Maybe<T>:IMonad<T>
+    public interface Maybe<T> : IMonad<T>
     {
         bool IsJust();
         bool IsNothing();

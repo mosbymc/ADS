@@ -10,7 +10,7 @@ namespace ADS
         }
     }
 
-    public class Constant<T>
+    public class Constant<T> : IMonad<T>
     {
         private T Value;
 
@@ -19,15 +19,19 @@ namespace ADS
             Value = value;
         }
 
-        public Constant<TResult> Map<TResult>(Func<T, TResult> fn)
+        public Constant<T> Map<TResult>(Func<T, TResult> fn)
         {
-            new Constant<T>(Value);
-            return new Constant<TResult>(fn(Value));
+            return this;
         }
 
         public Constant<T> Chain<TResult>(Func<T, Constant<TResult>> fn)
         {
             return this;
+        }
+
+        IMonad<TResult> IMonad<T>.Chain<TResult>(Func<T, IMonad<TResult>> fn)
+        {
+            return fn(Value);
         }
 
         public Constant<T> Contramap<A, B>(Func<A, B> fn)
@@ -40,6 +44,26 @@ namespace ADS
             return this;
         }
 
+        public IMonad<Constant<TResult>> Traverse<TResult>(Func<T, IMonad<TResult>> fn)
+        {
+            return fn(Value).Map(x => new Constant<TResult>(x));
+        }
+
+        IMonad<IMonad<TResult>> IMonad<T>.Traverse<TResult>(Func<T, IMonad<TResult>> fn)
+        {
+            return Traverse(fn) as IMonad<IMonad<TResult>>;
+        }
+
+        public Constant<T> Apply<TResult>(Constant<T> x)
+        {
+            return this;
+        }
+
+        IMonad<TResult> IMonad<T>.Apply<TResult>(IMonad<T> ma)
+        {
+            return ma.Map(Value as Func<T, TResult>) as Constant<TResult>;
+        }
+
         public TResult Fold<TResult>(Func<T, TResult> fn)
         {
             return fn(Value);
@@ -48,6 +72,11 @@ namespace ADS
         public T Extract()
         {
             return Value;
+        }
+
+        public bool Equals(IMonad<T> ma)
+        {
+            return ma.GetType().IsInstanceOfType(this) && ma.Extract().Equals(Value);
         }
 
         public override string ToString()
