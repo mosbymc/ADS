@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ADS
+﻿namespace ADS
 {
     public interface Maybe<T> : IMonad<T>
     {

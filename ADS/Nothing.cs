@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ADS
 {
@@ -19,13 +17,13 @@ namespace ADS
 
     public class Nothing<T> : Maybe<T>
     {
-        private T Value;
+        private readonly T _value;
 
         public Nothing() {}
 
         public Nothing(T value)
         {
-            Value = value;
+            _value = value;
         }
 
         public Maybe<TResult> Map<TResult>(Func<T, TResult> fn)
@@ -60,7 +58,7 @@ namespace ADS
 
         public IMonad<Nothing<TResult>> Traverse<TResult>(Func<T, IMonad<TResult>> fn)
         {
-            return fn(Value).Map(x => new Nothing<TResult>());
+            return fn(_value).Map(x => new Nothing<TResult>());
         }
 
         IMonad<IMonad<TResult>> IMonad<T>.Traverse<TResult>(Func<T, IMonad<TResult>> fn)
@@ -80,9 +78,14 @@ namespace ADS
             return Apply<TResult>(x: (Nothing<T>)ma);
         }
 
+        public Nothing<TResult> Fold<TResult>(Func<T, T, TResult> fn, T seed)
+        {
+            return new Nothing<TResult>(default(TResult));
+        }
+
         public bool Equals(IMonad<T> ma)
         {
-            return ma.GetType().IsInstanceOfType(this) && ma.Extract().Equals(Value);
+            return ma.GetType().IsInstanceOfType(this) && ma.Extract().Equals(_value);
         }
 
         public bool IsJust()
@@ -97,7 +100,7 @@ namespace ADS
 
         public T Extract()
         {
-            return Value;
+            return _value;
         }
     }
 }

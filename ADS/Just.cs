@@ -17,23 +17,23 @@ namespace ADS
 
     public class Just<T> : Maybe<T>
     {
-        private T Value;
+        private readonly T _value;
 
         public Just(T value)
         {
-            Value = value;
+            _value = value;
         }
 
         public IMonad<TResult> Map<TResult>(Func<T, TResult> fn)
         {
-            var res = fn(Value);
+            var res = fn(_value);
             if (null == res) return new Nothing<TResult>();
             return new Just<TResult>(res);
         }
 
         public Maybe<TResult> Chain<TResult>(Func<T, Maybe<TResult>> fn)
         {
-            return fn(Value);
+            return fn(_value);
         }
 
         IMonad<TResult> IMonad<T>.Chain<TResult>(Func<T, IMonad<TResult>> fn)
@@ -43,17 +43,17 @@ namespace ADS
 
         public IMonad<Func<A, C>> Contramap<A, B, C>(Func<A, B> fn)
         {
-            return new Just<Func<A, C>>(arg => (Value as Func<B, C>)(fn(arg)));
+            return new Just<Func<A, C>>(arg => (_value as Func<B, C>)(fn(arg)));
         }
 
         public IMonad<Func<A, D>> Dimap<A, B, C, D>(Func<A, B> f, Func<C, D> g)
         {
-            return new Just<Func<A, D>>(arg => g((Value as Func<B, C>)(f(arg))));
+            return new Just<Func<A, D>>(arg => g((_value as Func<B, C>)(f(arg))));
         }
 
         public IMonad<Just<TResult>> Traverse<TResult>(Func<T, IMonad<TResult>> fn)
         {
-            return fn(Value).Map(x => new Just<TResult>(x));
+            return fn(_value).Map(x => new Just<TResult>(x));
         }
 
         IMonad<IMonad<TResult>> IMonad<T>.Traverse<TResult>(Func<T, IMonad<TResult>> fn)
@@ -65,7 +65,7 @@ namespace ADS
 
         public Just<TResult> Apply<TResult>(Just<T> x)
         {
-            return x.Map(Value as Func<T, TResult>) as Just<TResult>;
+            return x.Map(_value as Func<T, TResult>) as Just<TResult>;
         }
 
         IMonad<TResult> IMonad<T>.Apply<TResult>(IMonad<T> ma)
@@ -73,9 +73,14 @@ namespace ADS
             return Apply<TResult>(x: (Just<T>)ma);
         }
 
+        public TResult Fold<TResult>(Func<T, T, TResult> fn, T seed)
+        {
+            return fn(seed, _value);
+        }
+
         public bool Equals(IMonad<T> ma)
         {
-            return ma.GetType().IsInstanceOfType(this) && ma.Extract().Equals(Value);
+            return ma.GetType().IsInstanceOfType(this) && ma.Extract().Equals(_value);
         }
 
         public bool IsJust()
@@ -90,7 +95,7 @@ namespace ADS
 
         public T Extract()
         {
-            return Value;
+            return _value;
         }
     }
 }
